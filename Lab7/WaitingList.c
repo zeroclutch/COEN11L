@@ -43,19 +43,21 @@ int checkDuplicate(char name[20]) {
  */
 void removeNode(NODE* node) {
     if(node != NULL) {
+        if(node != head && node != tail) {
+            node->next->previous = node->previous;
+            node->previous->next = node->next;
+        }
         if(node == head) {
             head = node->next;
             if(head != NULL) {
                 head->previous = NULL;
             }
-        } else if (node == tail) {
+        }
+        if (node == tail) {
             tail = node->previous;
             if(tail != NULL) {
                 tail->next = NULL;
             }
-        } else {
-            node->next->previous = node->previous;
-            node->previous->next = node->next;
         }
         free(node);
     }
@@ -146,14 +148,17 @@ void readAll(char* filename) {
     char name[20];
     int size;
     if(file == NULL) {
-        printf("Error: Invalid file!");
-    } else {
-        while(!feof(file)) {
-            fscanf(file, "%s\t", name);
-            fscanf(file, "%d\n", &size);
+        file = fopen(filename, "w+");
+    }
+    while(!feof(file)) {
+        fscanf(file, "%[^,],", name);
+        fscanf(file, "%d\n", &size);
+        if(size) {
+            printf("Adding group '%s' with size %d\n", name, size);
             insert(name, size);
         }
     }
+    
     fclose(file);
 }
 
@@ -168,7 +173,7 @@ void saveAll(char* filename) {
             // The list is empty
         } else {
             while(node != NULL) {
-                fprintf(file, "%s\t", node->name);
+                fprintf(file, "%s,", node->name);
                 fprintf(file, "%d\n", node->size);
                 node = node->next;
             }
